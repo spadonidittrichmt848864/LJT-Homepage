@@ -1,0 +1,27 @@
+name: Site Build Check
+on:
+  workflow_dispatch:
+permissions:
+  pages: write
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+      - name: Attempt to enable GitHub Pages
+        continue-on-error: true
+        run: gh api -X POST "/repos/${GITHUB_REPOSITORY}/pages" -f build_type=workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1.328.0
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+          cache-version: 0
+      - name: Build with Jekyll
+        run: bundle exec jekyll build
+        env:
+          JEKYLL_ENV: production
